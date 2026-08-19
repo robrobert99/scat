@@ -224,26 +224,31 @@ def scat_main():
             'gsmtapv3': args.gsmtapv3})
 
     # Run process
-    if args.serial or args.usb:
-        current_parser.stop_diag()
-        current_parser.init_diag()
-        current_parser.prepare_diag()
+    # The IO device is used as a context manager so that it is always released:
+    # on normal completion, on Ctrl-C (sigint_handler raises SystemExit, which
+    # still unwinds this block) and on any exception raised while setting up or
+    # running the diag session.
+    with io_device:
+        if args.serial or args.usb:
+            current_parser.stop_diag()
+            current_parser.init_diag()
+            current_parser.prepare_diag()
 
-        signal.signal(signal.SIGINT, sigint_handler)
+            signal.signal(signal.SIGINT, sigint_handler)
 
-        if not (args.qmdl == None) and args.type == 'qc':
-            current_parser.run_diag(scat.writers.RawWriter(args.qmdl))
-        if not (args.sdmraw == None) and args.type == 'sec':
-            current_parser.run_diag(scat.writers.RawWriter(args.sdmraw))
+            if not (args.qmdl == None) and args.type == 'qc':
+                current_parser.run_diag(scat.writers.RawWriter(args.qmdl))
+            if not (args.sdmraw == None) and args.type == 'sec':
+                current_parser.run_diag(scat.writers.RawWriter(args.sdmraw))
+            else:
+                current_parser.run_diag()
+
+            current_parser.stop_diag()
+        elif args.dump:
+            current_parser.read_dump()
         else:
-            current_parser.run_diag()
-
-        current_parser.stop_diag()
-    elif args.dump:
-        current_parser.read_dump()
-    else:
-        assert('Invalid input handler?')
-        sys.exit(1)
+            assert('Invalid input handler?')
+            sys.exit(1)
 
 if __name__ == '__main__':
     scat_main()
