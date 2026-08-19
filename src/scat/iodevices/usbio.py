@@ -8,7 +8,10 @@ from scat.iodevices.abstractio import AbstractIO
 
 class USBIO(AbstractIO):
     def __init__(self):
-        self.usb_dev = None
+        self.dev = None
+        self.intf = None
+        self.r_handle = None
+        self.w_handle = None
         self.block_until_data = True
         self.file_available = False
         self.fname = ''
@@ -91,8 +94,14 @@ class USBIO(AbstractIO):
             self.dev.set_configuration(config)
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.usb_dev is not None:
-            usb.util.dispose_resources(self.usb_dev)
+        # The device is stored in self.dev by probe_device_by_bus_dev(),
+        # probe_device_by_vid_pid() and guess_device().
+        if self.dev is not None:
+            usb.util.dispose_resources(self.dev)
+            self.r_handle = None
+            self.w_handle = None
+            self.intf = None
+            self.dev = None
 
     @staticmethod
     def list_usb_devices() -> None:
