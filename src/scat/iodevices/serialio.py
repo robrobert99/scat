@@ -6,8 +6,8 @@ import scat.util as util
 from scat.iodevices.abstractio import AbstractIO
 
 class SerialIO(AbstractIO):
-    def __init__(self, port_name: str, baudrate: int=115200, rts: bool=True, dsr: bool=True):
-        self.port = serial.Serial(port_name, baudrate=baudrate, timeout=0.5, rtscts=rts, dsrdtr=dsr)
+    def __init__(self, port_name: str, baudrate: int=115200, rts: bool=True, dsr: bool=True, write_timeout: float=5.0):
+        self.port = serial.Serial(port_name, baudrate=baudrate, timeout=0.5, write_timeout=write_timeout, rtscts=rts, dsrdtr=dsr)
         self.block_until_data = True
         self.file_available = False
         self.fname = ''
